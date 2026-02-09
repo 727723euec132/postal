@@ -1,20 +1,35 @@
+// Mongoose model for tracking parcel lifecycle, prediction, and weather metadata.
 import mongoose from "mongoose";
 
 const parcelSchema = new mongoose.Schema(
   {
-    trackingNumber: { type: String, required: true, unique: true },
-    office: { type: mongoose.Schema.Types.ObjectId, ref: "Office", required: true },
+    trackingId: { type: String, required: true, unique: true },
+    origin: { type: String, required: true },
+    destination: { type: String, required: true },
+    currentLocation: { type: String, required: true },
     status: {
       type: String,
-      enum: ["at_office", "out_for_delivery", "delivered"],
-      default: "at_office",
+      enum: ["registered", "in_transit", "at_office", "out_for_delivery", "delivered"],
+      default: "registered",
     },
-    customer: {
-      name: { type: String, required: true },
-      email: { type: String, required: true },
+    assignedOfficer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    history: [
+      {
+        location: String,
+        timestamp: Date,
+        note: String,
+      },
+    ],
+    prediction: {
+      delayProbability: { type: Number, default: 0 },
+      estimatedHours: { type: Number, default: 0 },
+      reason: { type: String },
     },
-    estimatedDeliveryDate: { type: Date, required: true },
-    delayDays: { type: Number, default: 0 },
+    weatherData: {
+      summary: String,
+      temperature: Number,
+      impact: String,
+    },
   },
   { timestamps: true }
 );
