@@ -1,14 +1,27 @@
+// Routes for postal office management.
 import express from "express";
-import { Office } from "../models/Office.js";
+import { body } from "express-validator";
+import { createOffice, listOffices, updateOfficeConnections } from "../controllers/officeController.js";
+import { authenticate } from "../middleware/auth.js";
+import { authorizeRoles } from "../middleware/role.js";
+import { validateRequest } from "../middleware/validate.js";
 
 export const officeRouter = express.Router();
 
-officeRouter.get("/", async (_req, res) => {
-  const offices = await Office.find().sort({ createdAt: -1 });
-  res.json(offices);
-});
+officeRouter.get("/", listOffices);
 
-officeRouter.post("/", async (req, res) => {
-  const office = await Office.create(req.body);
-  res.status(201).json(office);
-});
+officeRouter.post(
+  "/",
+  authenticate,
+  authorizeRoles("admin"),
+  [body("officeName").notEmpty(), body("location").notEmpty()],
+  validateRequest,
+  createOffice
+);
+
+officeRouter.patch(
+  "/:id/connections",
+  authenticate,
+  authorizeRoles("admin"),
+  updateOfficeConnections
+);
